@@ -1,0 +1,11 @@
+.env
+.env.example
+back/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.git
+.gitignore
