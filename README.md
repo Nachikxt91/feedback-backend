@@ -324,8 +324,7 @@ For **Fynd AI Internship Assessment**
 ## 📞 Contact
 
 - **GitHub:** [Nachikxt91](https://github.com/Nachikxt91)
-- **Email:** nachiket.work@example.com
-- **LinkedIn:** [Your LinkedIn Profile]
+- **LinkedIn:**: https://www.linkedin.com/in/nachiket-sarode-8979a9257/ 
 
 ---
 
