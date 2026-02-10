@@ -1,44 +1,86 @@
-# Auto detect text files and normalize line endings to LF
-* text=auto
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Python files
-*.py text eol=lf
-*.pyx text eol=lf
-*.pxd text eol=lf
-*.pyi text eol=lf
+# Virtual Environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Config files
-*.toml text eol=lf
-*.json text eol=lf
-*.yaml text eol=lf
-*.yml text eol=lf
-*.ini text eol=lf
-*.cfg text eol=lf
-*.conf text eol=lf
-*.txt text eol=lf
-*.md text eol=lf
-requirements.txt text eol=lf
+# Environment Variables
+.env
+*.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vscode
+.idea
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+*.cover
+.hypothesis/
+
+# Logs
+*.log
+logs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Docker
-Dockerfile text eol=lf
-.dockerignore text eol=lf
+.dockerignore
+docker-compose.override.yml
 
-# Shell scripts
-*.sh text eol=lf
-
-# Windows scripts
-*.bat text eol=crlf
-*.cmd text eol=crlf
-
-# Git
-.gitignore text eol=lf
-.gitattributes text eol=lf
-
-# Binary files
-*.pyc binary
-*.pyo binary
-*.pyd binary
-*.so binary
-*.db binary
-*.sqlite binary
-*.sqlite3 binary
+# Misc
+*.bak
+*.tmp
+*.temp
+.mypy_cache/
+.dmypy.json
+dmypy.json

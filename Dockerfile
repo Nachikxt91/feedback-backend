@@ -18,7 +18,7 @@ EXPOSE 7860
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:7860/api/feedback/health')"
+    CMD python -c "import httpx; httpx.get('http://localhost:7860/api/health')"
 
 # Run application on port 7860
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]

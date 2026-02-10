@@ -5,12 +5,15 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 import time
-import os
 from .config import settings
 from .database import db_manager
 from .routers.feedback import router as feedback_router
 from .routers.admin import router as admin_router
+from .routers.auth import router as auth_router
+from .routers.companies import router as company_router
+from .routers.import_export import router as import_export_router
 from .utils.exceptions import FeedbackSystemException, feedback_exception_handler
+from .middleware import RateLimitMiddleware, RequestLoggingMiddleware
 
 # Logging configuration
 logging.basicConfig(
@@ -19,10 +22,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Track startup time for health check
+startup_time = None
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
-    logger.info("🚀 Starting Feedback System API...")
+    global startup_time
+    logger.info("🚀 Starting ReviewPulse AI API...")
     try:
         await db_manager.connect_to_database()
         logger.info("✅ Successfully connected to MongoDB")
@@ -30,6 +37,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Database connection failed: {e}")
         raise
     
+    startup_time = time.time()
     logger.info("✅ Application started successfully")
     yield
     
@@ -38,22 +46,25 @@ async def lifespan(app: FastAPI):
     logger.info("✅ Application shut down gracefully")
 
 app = FastAPI(
-    title="Feedback System API",
-    version="1.0.0",
-    description="Production-grade AI feedback system",
+    title="ReviewPulse AI API",
+    version="2.0.0",
+    description="Multi-tenant AI-powered feedback analysis platform. "
+                "Companies sign up, get a public review link, and receive "
+                "AI-driven sentiment analysis & actionable business insights.",
     lifespan=lifespan
 )
 
-# Middleware
+# Middleware (order matters - first added = last executed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
+app.add_middleware(RequestLoggingMiddleware)
 
 # Exception handlers
 app.add_exception_handler(FeedbackSystemException, feedback_exception_handler)
@@ -66,18 +77,44 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={"error": "Internal server error"}
     )
 
-# Include routers
-app.include_router(feedback_router, prefix="/api/feedback", tags=["Feedback"])
+# ── Routers ─────────────────────────────────────────────────────────
+# Auth (public — no JWT required)
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+
+# Company profile management (JWT required)
+app.include_router(company_router, prefix="/api/company", tags=["Company"])
+
+# Admin dashboard endpoints (JWT required)
 app.include_router(admin_router, prefix="/api", tags=["Admin"])
+
+# Import/Export (JWT required)
+app.include_router(import_export_router, prefix="/api", tags=["Import/Export"])
+
+# Public-facing review endpoints (no JWT — uses company slug)
+app.include_router(feedback_router, prefix="/api", tags=["Reviews"])
 
 
 @app.get("/", tags=["Root"])
 async def root():
     return {
-        "message": "Feedback System API v1.0.0",
+        "message": "ReviewPulse AI API v2.0.0",
         "docs": "/docs",
-        "health": "/api/feedback/health"
+        "health": "/api/health",
+        "endpoints": {
+            "auth": "/api/auth/register, /api/auth/login",
+            "company": "/api/company/me",
+            "admin": "/api/admin/feedbacks, /api/admin/analytics, /api/admin/insights",
+            "public_review": "/api/review/{company-slug}",
+            "import": "/api/import/csv, /api/import/pdf",
+            "export": "/api/export/csv, /api/export/json",
+        }
     }
+
+def get_uptime() -> float:
+    """Get server uptime in seconds"""
+    if startup_time:
+        return time.time() - startup_time
+    return 0.0
 
 if __name__ == "__main__":
     import uvicorn
